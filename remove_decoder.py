@@ -493,12 +493,12 @@ class HarDNetSeg(nn.Module):
         for i in range(3):
             print(i)
             skip_x = xs[2-i]
-            print("x:", x.size())
+            #print("x:", x.size())
             #print("skip_x:", skip_x.size())
             x = self.transUpBlocks[i](x, skip_x, (i<self.skip_lv))
-            print("x1:", x.size())
+            #print("x1:", x.size())
             x = self.conv1x1_up[i](x)
-            print("x2:", x.size())
+            #print("x2:", x.size())
 
         z = {}
         for head in self.heads:
