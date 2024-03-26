@@ -398,12 +398,12 @@ class TransitionUp(nn.Module):
 
 class HarDNetSeg(nn.Module):
     def __init__(self, num_layers, heads, pretrained, down_ratio, final_kernel,
-                 last_level, head_conv, out_channel=0, trt=False, Maxpool=False):
+                 last_level, head_conv, out_channel=0, trt=False, Maxpool=False, Downsample=True):
         super(HarDNetSeg, self).__init__()
         assert down_ratio in [2, 4, 8, 16]
         self.trt = trt
         self.first_level = int(np.log2(down_ratio))-1
-        self.last_level = last_level
+        self.downsample = Downsample
 
         self.base = HarDNetBase(num_layers, Maxpool=Maxpool).base
         if Maxpool:
@@ -493,16 +493,19 @@ class HarDNetSeg(nn.Module):
         for i in range(3):
             print(i)
             skip_x = xs[2-i]
-            #print("x:", x.size())
+            print("x:", x.size())
             #print("skip_x:", skip_x.size())
             x = self.transUpBlocks[i](x, skip_x, (i<self.skip_lv))
-            #print("x1:", x.size())
+            print("x1:", x.size())
             x = self.conv1x1_up[i](x)
-            #print("x2:", x.size())
+            print("x2:", x.size())
 
         z = {}
         for head in self.heads:
             z[head] = self.__getattr__(head)(x)
+            if self.downsample:
+              z[head] = F.interpolate(z[head], size=(z[head].size(2)//2, z[head].size(3)//2), mode="bilinear", align_corners=True)
+
         if self.trt:
           return [z[h] for h in z]
         return [z]
