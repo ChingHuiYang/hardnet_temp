@@ -13,6 +13,7 @@ zero_point = 0
 for name, param in model.named_parameters():
     if 'weight' in name:
         quantized_weight = torch.quantization.quantize_linear(param, scale=scale, zero_point=zero_point, dtype=torch.qint8)
+        #quantized_model = torch.quantization.quantize_dynamic(model, {nn.Linear}, dtype=torch.qint8)
         setattr(model, name, quantized_weight)
 
 # 保存量化后的模型
